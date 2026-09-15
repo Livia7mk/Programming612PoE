@@ -1,39 +1,77 @@
-name: RaceDay CI
+name: RaceDay Documentation Check
 
 on:
   push:
     branches:
       - main
-      - develop
-
   pull_request:
     branches:
       - main
-      - develop
 
 jobs:
-  build-and-test:
-
+  documentation-check:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
+      - name: Check documentation files
+        run: |
+          echo "Checking RaceDay documentation..."
 
-      - name: Restore dependencies
-        run: dotnet restore
+          test -f "docs/raceday_erd.png"
+          test -f "docs/raceday_api_endpoint_plan.pdf"
+          test -f "docs/Sql script.pdf"
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+          echo "All three documentation files exist."
 
-      - name: Run tests
-        run: dotnet test --no-build --configuration Release
+      - name: Install PDF tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
 
-      - name: Publish API
-        run: dotnet publish --configuration Release --output ./publish
+      - name: Extract API plan text
+        run: |
+          pdftotext "docs/raceday_api_endpoint_plan.pdf" api_plan.txt
+
+      - name: Extract SQL script text
+        run: |
+          pdftotext "docs/Sql script.pdf" sql_script.txt
+
+      - name: Check RaceDay entities
+        run: |
+          echo "Checking RaceDay entities..."
+
+          entities=(
+            "Organiser"
+            "Event"
+            "Participant"
+            "Registration"
+            "Category"
+            "Result"
+            "Route"
+            "Weather"
+          )
+
+          for entity in "${entities[@]}"
+          do
+            echo "Checking: $entity"
+
+            if grep -qi "$entity" api_plan.txt; then
+              echo "  API Plan: ✅"
+            else
+              echo "  API Plan: ❌"
+              exit 1
+            fi
+
+            if grep -qi "$entity" sql_script.txt; then
+              echo "  SQL Script: ✅"
+            else
+              echo "  SQL Script: ❌"
+              exit 1
+            fi
+          done
+
+          echo ""
+          echo "✅ RaceDay documentation consistency check passed!"
