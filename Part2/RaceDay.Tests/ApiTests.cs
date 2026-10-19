@@ -8,7 +8,6 @@ using Xunit;
 
 namespace RaceDay.Tests;
 
-// Events, categories, enrolments, results and role-based access, all in one place.
 public class ApiTests : IDisposable
 {
     private readonly RaceDayFactory _factory = new();
@@ -19,7 +18,7 @@ public class ApiTests : IDisposable
     // Helpers
     // =====================================================================
 
-    // An organiser with an event and a category, plus a logged-in participant (not yet entered).
+  
     private async Task<(HttpClient Organiser, HttpClient Participant, int EventId, int CategoryId)> SetUpAsync()
     {
         var organiser = await TestHelpers.LoggedInClientAsync(_factory, "org@test.com", "Organiser");
