@@ -1,0 +1,33 @@
+name: Part 2 - Build and Test
+
+on:
+  push:
+    branches: [part2-api]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Part2
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore RaceDay.slnx
+
+      - name: Build
+        run: dotnet build RaceDay.slnx --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: dotnet test RaceDay.slnx --no-build --configuration Release --verbosity normal
