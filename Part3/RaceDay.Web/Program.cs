@@ -1,55 +1,78 @@
-
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using RaceDay.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add MVC services.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 
-// Connect the MVC website to the RaceDay API.
-builder.Services.AddHttpClient("RaceDayApi", client =>
+// Server-side session: holds the API's login cookie, the user's ID and role.
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
 {
-    client.BaseAddress = new Uri(
-        builder.Configuration["ApiSettings:BaseUrl"]!
-    );
+    options.Cookie.Name = "RaceDay.Web.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromHours(8);
 });
 
-// Configure cookie authentication for the MVC website.
+// The MVC app's own login cookie, so [Authorize] and role checks work on every page.
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.Cookie.Name = "RaceDay.Web.Session";
-        options.LoginPath = "/Auth/Login";
-        options.AccessDeniedPath = "/Home/AccessDenied";
+        options.Cookie.Name = "RaceDay.Web.Auth";
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
     });
 
-// Add authorization services.
 builder.Services.AddAuthorization();
+
+// Every data operation goes through the Part 2 API. The address comes from settings,
+// so Docker can point it somewhere else without changing code.
+builder.Services
+    .AddHttpClient<ApiClient>(client =>
+    {
+        var baseUrl = builder.Configuration["Api:BaseUrl"]
+            ?? throw new InvalidOperationException("Api:BaseUrl is not configured.");
+        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+    })
+    // Cookies are forwarded by hand, one per user, and never shared between users.
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { UseCookies = false });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
-
-// Authentication must come before authorization.
+app.UseSession();
 app.UseAuthentication();
-app.UseAuthorization();
 
-app.MapStaticAssets();
+// If the session has expired but the login cookie is still there, sign the user out cleanly.
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true &&
+        string.IsNullOrEmpty(context.Session.GetString(SessionKeys.ApiCookie)))
+    {
+        await context.SignOutAsync();
+        context.Response.Redirect("/Account/Login");
+        return;
+    }
+
+    await next();
+});
+
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
