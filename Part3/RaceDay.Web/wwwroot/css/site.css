@@ -1,31 +1,89 @@
-html {
-  font-size: 14px;
+/* RaceDay brand: deep navy, energetic orange, white. Used by every page. */
+:root {
+  --rd-navy: #0b1f3a;
+  --rd-navy-light: #15305a;
+  --rd-orange: #ff5a1f;
+  --rd-orange-dark: #e04a12;
+  --rd-bg: #f4f6fa;
+  --rd-text: #1a2433;
+  --bs-link-color-rgb: 224, 74, 18;
+  --bs-link-hover-color-rgb: 184, 58, 12;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
+html { font-size: 15px; position: relative; min-height: 100%; }
 
 body {
-  margin-bottom: 60px;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--rd-bg);
+  color: var(--rd-text);
+  margin-bottom: 70px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+h1, h2, h3, h4, h5, .navbar-brand {
+  font-family: 'Barlow Condensed', 'Arial Narrow', 'Segoe UI', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* Navigation */
+.navbar-raceday { background: var(--rd-navy); border-bottom: 4px solid var(--rd-orange); }
+.navbar-raceday .navbar-brand { font-size: 1.6rem; color: #fff; }
+.navbar-raceday .navbar-brand span { color: var(--rd-orange); }
+.navbar-raceday .nav-link { color: rgba(255, 255, 255, 0.85); font-weight: 500; }
+.navbar-raceday .nav-link:hover,
+.navbar-raceday .nav-link.active { color: #fff; }
+.rd-role { background: var(--rd-orange); color: #fff; font-weight: 600; letter-spacing: 0.03em; }
+
+/* Buttons */
+.btn-primary {
+  --bs-btn-bg: var(--rd-orange);
+  --bs-btn-border-color: var(--rd-orange);
+  --bs-btn-hover-bg: var(--rd-orange-dark);
+  --bs-btn-hover-border-color: var(--rd-orange-dark);
+  --bs-btn-active-bg: var(--rd-orange-dark);
+  --bs-btn-active-border-color: var(--rd-orange-dark);
+  --bs-btn-disabled-bg: var(--rd-orange);
+  --bs-btn-disabled-border-color: var(--rd-orange);
+  --bs-btn-font-weight: 600;
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--rd-orange-dark);
+  --bs-btn-border-color: var(--rd-orange);
+  --bs-btn-hover-bg: var(--rd-orange);
+  --bs-btn-hover-border-color: var(--rd-orange);
+  --bs-btn-active-bg: var(--rd-orange-dark);
+  --bs-btn-active-border-color: var(--rd-orange-dark);
+}
+
+/* Cards and hero */
+.rd-card { border: 0; border-radius: 0.75rem; box-shadow: 0 4px 18px rgba(11, 31, 58, 0.1); }
+.rd-hero {
+  background: linear-gradient(120deg, var(--rd-navy) 0%, var(--rd-navy-light) 60%, var(--rd-orange) 140%);
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+}
+.rd-hero h1 { font-size: 2.8rem; }
+.rd-hero p { font-size: 1.15rem; opacity: 0.9; }
+
+/* Enrolment statuses are colour coded everywhere in the app */
+.status-badge { padding: 0.4em 0.8em; border-radius: 2rem; font-weight: 600; font-size: 0.8rem; color: #fff; }
+.status-confirmed { background: #1e9e5a; }
+.status-pending { background: #f5a623; color: #1a1200; }
+.status-cancelled { background: #6c7685; }
+.status-refunded { background: #c0392b; }
+
+/* Forms */
+.validation-summary-valid { display: none; }
+.form-control:focus, .form-select:focus {
+  border-color: var(--rd-orange);
+  box-shadow: 0 0 0 0.2rem rgba(255, 90, 31, 0.2);
+}
+
+/* Footer */
+.footer {
+  position: absolute; bottom: 0; width: 100%;
+  line-height: 60px; background: var(--rd-navy); color: rgba(255, 255, 255, 0.7);
 }
